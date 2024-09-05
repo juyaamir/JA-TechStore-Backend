@@ -1,0 +1,28 @@
+#Node modules
+node_modules
+
+#logs
+logs/
+*.log
+
+#Environment variables
+.env 
+
+#OS files
+.DS_Store
+
+#Built directories
+dist/
+build/
+
+#IDE/Editor Directories and settings
+.idea/
+.vscode/
+
+#Cache and directories
+.cache/
+coverage/
+
+#Temporary files
+*.tmp 
+*.swp
