@@ -26,4 +26,27 @@ export const registerUser = async (req, res) => {
         res.status(500).json({message: `Server Error`});
 
     }
+};
+
+//login controller
+export const loginUser = async(req, res) => {
+    try {
+        const {email, password} = req.body;
+        console.log(`Received data: ${JSON.stringify(req.body)}`);
+        if(!email || !password) {
+            return res.status(400).json({message: `Please provide all fields`});
+        };
+        const user = await User.findOne({email});
+        if(!user){
+            return res.status(400).json({message: `Invalid credentials`});
+        };
+        const isMatch = await bcrypt.compare(password, user.password);
+        if(!isMatch){
+            return res.status(400).json({message: `Invalid credentials`});
+        }
+        res.status(200).json({message: `You have successfully logged in!`});
+    }catch(error) {
+        console.error(error);
+        res.status(500).json({message: `Server Error`});
+    }
 }
