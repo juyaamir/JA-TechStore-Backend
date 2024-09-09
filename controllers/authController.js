@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 
+//register controller to handle user registration
 export const registerUser = async (req, res) => {
     
     try {
@@ -48,5 +49,22 @@ export const loginUser = async(req, res) => {
     }catch(error) {
         console.error(error);
         res.status(500).json({message: `Server Error`});
+    }
+};
+
+//delete user controller
+export const deleteUser = async(req, res) => {
+    try {
+        const {email} = req.body;
+        if(!email){
+            return res.status(400).json({message: `Please provide an email`});
+        };
+        const user = await User.findOneAndDelete({email});
+        if(!user){
+            return res.status(400).json({message: `User not found`});
+        }
+        res.status(200).json({message: `User deleted successfully!`});
+    } catch (error) {
+        res.status(500).json({message: `Server Error ${error.message}`});
     }
 }
