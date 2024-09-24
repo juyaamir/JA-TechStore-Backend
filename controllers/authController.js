@@ -1,15 +1,16 @@
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
-//register controller to handle user registration
+// Signup endpoint
 export const registerUser = async (req, res) => {
-    
+    const {name, email, password} = req.body;
     try {
-        const {name, email, password} = req.body;
+        
         if(!name || !email || !password){
             return res.status(400).json({message: `Please provide all fields`});
         }
-       /*  console.log(`Received data: ${JSON.stringify(req.body)}`) */
+  
         //check if the user already exists
         const userExists = await User.findOne({email});
         if(userExists){
@@ -18,18 +19,18 @@ export const registerUser = async (req, res) => {
         //create a new user
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        
         const user = new User({name, email, password: hashedPassword});
         await user.save();
         res.status(201).json({message: `Your account has been created successfully!`});
+        console.log(`User created successfully!`);
     } catch(error) {
-        console.error(error);
-        res.status(500).json({message: `Server Error`});
+        console.log(error);
+        res.status(500).json({error: `Server Error ${error.message}`});
 
     }
 };
 
-//login controller
+//login endpoint
 export const loginUser = async(req, res) => {
     try {
         const {email, password} = req.body;
@@ -45,10 +46,14 @@ export const loginUser = async(req, res) => {
         if(!isMatch){
             return res.status(400).json({message: `Invalid credentials`});
         }
-        res.status(200).json({message: `You have successfully logged in!`});
+
+        //create a jwt token and send it to the user
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h'});
+        res.status(200).json({token});
+        console.log(`Logged in Successfully!`);
     }catch(error) {
-        console.error(error);
-        res.status(500).json({message: `Server Error`});
+        console.error(error.message);
+        res.status(500).json({message: `Server Error ${error.message}`});
     }
 };
 
@@ -66,5 +71,21 @@ export const deleteUser = async(req, res) => {
         res.status(200).json({message: `User deleted successfully!`});
     } catch (error) {
         res.status(500).json({message: `Server Error ${error.message}`});
+    }
+};
+
+//endpoint to get user details
+export const getProfile = async (req, res) => {
+    try {
+        const id = req.user.id;
+        const user = await User.findById(id);
+        if(!user) {
+            return res.status(400).json({message: `User not found`});
+        }
+        res.status(200).json({profile: user});
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({message: `Server Error ${error.message}`});
+
     }
 }

@@ -16,6 +16,10 @@ app.use('/api/auth', userRouter);
 app.get('/',(req, res) => {
     res.send('Hello from Express!');
 });
-
+//cookies and sessions
+app.get(`/set-cookies`, (req, res) => {
+    res.setHeader(`set-cookie`, `newUser=true, name=John`);
+    res.send(`you got the cookies!`);
+})
 
 export default app;
