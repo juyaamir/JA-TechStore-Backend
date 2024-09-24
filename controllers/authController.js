@@ -4,10 +4,10 @@ import jwt from 'jsonwebtoken';
 
 // Signup endpoint
 export const registerUser = async (req, res) => {
-    const {name, email, password} = req.body;
+    const {name, email, password, role} = req.body;
     try {
         
-        if(!name || !email || !password){
+        if(!name || !email || !password || !role){
             return res.status(400).json({message: `Please provide all fields`});
         }
   
@@ -19,7 +19,7 @@ export const registerUser = async (req, res) => {
         //create a new user
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        const user = new User({name, email, password: hashedPassword});
+        const user = new User({name, email, password: hashedPassword, role});
         await user.save();
         res.status(201).json({message: `Your account has been created successfully!`});
         console.log(`User created successfully!`);
@@ -48,7 +48,7 @@ export const loginUser = async(req, res) => {
         }
 
         //create a jwt token and send it to the user
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h'});
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h'});
         res.status(200).json({token});
         console.log(`Logged in Successfully!`);
     }catch(error) {
@@ -87,5 +87,19 @@ export const getProfile = async (req, res) => {
         console.error(error.message);
         res.status(500).json({message: `Server Error ${error.message}`});
 
+    }
+};
+
+//endpoint to get all users
+export const getUsers = async (req, res) => {
+    try {
+        const users = await User.find();
+        if(!users) {
+            return res.status(400).json({message: `No users found`});
+        }
+        res.status(200).json({users});
+    } catch( error ) {
+        console.error(error.message);
+        res.status(500).json({message: `Server Error ${error.message}`});
     }
 }
